@@ -8,11 +8,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Google & Yahoo Rank Search</title>
     <!-- Styles -->
-    <link href="{{ asset('resources/css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('AGL/resources/css/app.css') }}" rel="stylesheet">
 </head>
 <body>
 <div id="app"></div>
 
-<script src="{{ asset('js/app.js') }}"></script>
+<script  src="{{ asset('AGL/resources/js/app.js') }}"></script>
 </body>
 </html>
