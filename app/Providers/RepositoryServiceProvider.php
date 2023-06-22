@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
+use App\Interfaces\KeywordRepositoryInterface;
+use App\Repositories\KeywordRepository;
+use App\Interfaces\WebsiteRepositoryInterface;
+use App\Repositories\WebsiteRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider

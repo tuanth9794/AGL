@@ -17,4 +17,8 @@ class Keyword extends Model
             {
                 return $this->belongsTo('App\Entities\Website', 'website_id');
             }
+    public function search_tool()
+            {
+                return $this->belongsTo('App\Entities\SearchTool', 'search_tool_id');
+            }
 }

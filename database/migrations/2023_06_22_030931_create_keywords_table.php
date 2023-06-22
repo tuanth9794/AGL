@@ -17,8 +17,10 @@ return new class extends Migration
                                  $table->string('slug',20);
                                  $table->integer('rank');
                                  $table->double('searches');
-                     $table->unsignedBigInteger('website_id');
-                     $table->foreign('website_id')->references('id')->on('websites');
+                     $table->unsignedBigInteger('website_id')->nullable();;
+                     $table->foreign('website_id')->references('id')->on('websites')->onDelete('cascade');
+                     $table->unsignedBigInteger('search_tool_id')->nullable();;
+                     $table->foreign('search_tool_id')->references('id')->on('search_tools')->onDelete('cascade');
                                  $table->mediumInteger('is_active');
                                  $table->mediumInteger('is_publish');
                                  $table->string('create_by',20);

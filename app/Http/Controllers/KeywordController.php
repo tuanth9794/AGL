@@ -3,65 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keyword;
+use App\Interfaces\KeywordRepositoryInterface;
+use App\Interfaces\WebsiteRepositoryInterface;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreKeywordRequest;
 use App\Http\Requests\UpdateKeywordRequest;
 
 class KeywordController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+   public function __construct(KeywordRepositoryInterface $keyword, WebsiteRepositoryInterface $website)
     {
-        //
+        $this->keyword = $keyword;
+        $this->website = $website;
+    }
+    
+    public function form(){
+    	 return view('home');
+    }
+    public function index(Request $request)
+    {
+    $websiteSlug = $request->website;
+    $keywordSlug = $request->keyword;
+    
+    $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/'; 
+		if($websiteSlug == null || $keywordSlug == null){
+			return redirect()->back();
+		}elseif(preg_match($pattern, $keyword)){
+			return view('errors.404');
+		}
+		
+        $website = $this->website->findByField('slug','$websiteSlug')->first();
+        $lists = $website->keyword->where('slug','$keywordSlug');
+		dd($lists);
+        return response()->json($lists, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        $data = $request->all();
+        $post = Post::create($data);
+
+        return response()->json($post, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreKeywordRequest $request)
+    public function show(Post $post)
     {
-        //
+        return response()->json($post, 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Keyword $keyword)
+    public function update(Request $request, Post $post)
     {
-        //
+        $data = $request->all();
+        $post->update($data);
+
+        return response()->json($post, 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Keyword $keyword)
+    public function delete(Post $post)
     {
-        //
-    }
+        $post->delete();
+        $posts = Post::orderBy('id', 'desc')->get();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateKeywordRequest $request, Keyword $keyword)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Keyword $keyword)
-    {
-        //
+        return response()->json($posts, 200);
     }
 }
