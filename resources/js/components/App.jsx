@@ -1,30 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import 'antd/dist/antd.css';
 
-function App() {
-    return (
-        <div className="container">
-            <div className="row justify-content-center">
-                <div className="col-md-8">
-                    <div className="card">
-                        <div className="card-header">Example Component</div>
-
-                        <div className="card-body">I'm an example component!</div>
-                    </div>
+export default class App extends Component {
+    render() {
+        return (
+            <BrowserRouter>
+                <div>
+                    Hello
                 </div>
-            </div>
-        </div>
-    );
+            </BrowserRouter>
+        );
+    }
 }
 
-export default App;
-
-if (document.getElementById('app')) {
-    const Index = ReactDOM.createRoot(document.getElementById("app"));
-
-    Index.render(
-        <React.StrictMode>
-            <App/>
-        </React.StrictMode>
-    )
-}
+ReactDOM.render(<App />, document.getElementById('app'));

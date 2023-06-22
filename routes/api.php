@@ -17,4 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-//Route::get('danh-sach', 'KeywordController@index')->name('list');
+
+Route::prefix('keywords')->name('keywords.')->group(function () {
+        Route::get('danh-sach', 'KeywordController@index')->name('list');
+});

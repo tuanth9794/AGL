@@ -8,7 +8,7 @@ use App\Models\Keyword;
 class KeywordRepository implements KeywordRepositoryInterface
 {
 private $keyword;
-    public function __construct(keyword $keyword)
+    public function __construct(Keyword $keyword)
     {
         $this->keyword = $keyword;
     }

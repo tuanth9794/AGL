@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Keyword;
 use App\Interfaces\KeywordRepositoryInterface;
 use App\Interfaces\WebsiteRepositoryInterface;
+use App\Models\Keyword;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreKeywordRequest;
@@ -29,7 +29,7 @@ class KeywordController extends Controller
     $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/'; 
 		if($websiteSlug == null || $keywordSlug == null){
 			return redirect()->back();
-		}elseif(preg_match($pattern, $keyword)){
+		}elseif(preg_match($pattern, $keywordSlug) || preg_match($pattern, $websiteSlug)){
 			return view('errors.404');
 		}
 		
