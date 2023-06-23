@@ -5,6 +5,6 @@ namespace App\Interfaces;
 
 interface KeywordRepositoryInterface
 {
-	public function show();
+	public function show($request);
     public function store($request);
 }

@@ -23,18 +23,32 @@ class KeywordController extends Controller
     {
         return Inertia::render('Index');
     }
-    
-    public function show()
+
+    public function show(Request $request)
     {
-   	 $request->validate([
-            'name' => 'required',
-            'amount' => 'required',
-            'description' => 'required' //optional if you want this to be required
+        $this->checkGoogleRank();
+        dd('ok');
+        $request->validate([
+            'keyword' => 'required',
+            'website' => 'required'
         ]);
-        
-    	$response = $this->keyword->show();
-        return response()->json(['message'=> 'keyword created', 
-        'res' => $response]);
+
+        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$request->website)) {
+            return redirect()->back();
+        }elseif (count($request->keyword)==0){
+            return redirect()->back();
+        }
+        $responses = $this->keyword->show($request);
+        foreach ($responses as $response) {
+            if ($response->searches == 1) {
+                $response['googleRank'] = $response->rank;
+                $response['googleSearch'] = $response->searches;
+            } else {
+                $response['yahooRank'] = $response->rank;
+                $response['yahooSearch'] = $response->searches;
+            }
+        }
+        return response()->json($responses);
     }
 
     public function store(Request $request)
@@ -55,5 +69,32 @@ class KeywordController extends Controller
         return response()->json($lists, 200);
     }
 
+    public function checkGoogleRank(){
+        $country = "en";
+        $domain = "stackoverflow.com";
+        $keywords = "php google keyword rank checker";
+        $firstnresults = 50;
+
+        $rank = 0;
+        $urls = Array();
+        $pages = ceil($firstnresults / 10);
+        for($p = 0; $p < $pages; $p++){
+            $start = $p * 10;
+            $baseurl = "https://www.google.com/search?hl=".$country."&output=search&start=".$start."&q=".urlencode($keywords);
+            $html = file_get_contents($baseurl);
+
+            $doc = phpQuery::newDocument($html);
+
+            foreach($doc['#ires cite'] as $node){
+                $rank++;
+                $url = $node->nodeValue;
+                $urls[] = "[".$rank."] => ".$url;
+                if(stripos($url, $domain) !== false){
+                    break(2);
+                }
+            }
+        }
+        return urls;
+    }
 
 }

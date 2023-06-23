@@ -19,6 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('keyword')->name('keyword.')->group(function () {
-	Route::get('/', 'KeywordController@show')->name('api-keyword');
-        Route::post('/store', 'KeywordController@store')->name('api-keyword-store');
+    Route::get('/', 'KeywordController@show')->name('api-keyword');
+    Route::post('/store', 'KeywordController@store')->name('api-keyword-store');
 });
