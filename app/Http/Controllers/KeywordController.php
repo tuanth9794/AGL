@@ -23,6 +23,19 @@ class KeywordController extends Controller
     {
         return Inertia::render('Index');
     }
+    
+    public function show()
+    {
+   	 $request->validate([
+            'name' => 'required',
+            'amount' => 'required',
+            'description' => 'required' //optional if you want this to be required
+        ]);
+        
+    	$response = $this->keyword->show();
+        return response()->json(['message'=> 'keyword created', 
+        'res' => $response]);
+    }
 
     public function store(Request $request)
     {

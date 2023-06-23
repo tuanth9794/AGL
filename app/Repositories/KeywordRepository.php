@@ -13,9 +13,14 @@ private $keyword;
         $this->keyword = $keyword;
     }
 
-    public function store()
+    public function show()
     {
         return $this->keyword->all();
+    }
+    
+    public function store($request)
+    {
+        return $this->keyword->create($request->all());
     }
 
 }
