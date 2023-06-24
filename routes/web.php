@@ -14,5 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', 'KeywordController@show');
+Route::get('/', 'KeywordController@index');
 

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Interfaces\KeywordRepositoryInterface;
 use App\Interfaces\WebsiteRepositoryInterface;
 use App\Models\Keyword;
+use App\Models\Website;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreKeywordRequest;
 use App\Http\Requests\UpdateKeywordRequest;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
-
+use App\LaravelPhpQuery\phpQuery;
 class KeywordController extends Controller
 {
     public function __construct(KeywordRepositoryInterface $keyword, WebsiteRepositoryInterface $website)
@@ -24,14 +26,18 @@ class KeywordController extends Controller
         return Inertia::render('Index');
     }
 
-    public function show(Request $request)
+    public function show()
     {
-        $this->checkGoogleRank();
-        dd('ok');
+        $website = htmlspecialchars($_GET["website"]);
+        $keywordArray[] = $_GET["keyword"];
+        $google = $this->checkGoogleRank($website,$keywordArray);
+        return response()->json($google);
+
         $request->validate([
             'keyword' => 'required',
             'website' => 'required'
         ]);
+
 
         if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$request->website)) {
             return redirect()->back();
@@ -48,6 +54,7 @@ class KeywordController extends Controller
                 $response['yahooSearch'] = $response->searches;
             }
         }
+        return response()->json($google);
         return response()->json($responses);
     }
 
@@ -69,7 +76,14 @@ class KeywordController extends Controller
         return response()->json($lists, 200);
     }
 
-    public function checkGoogleRank(){
+    public function checkGoogleRank($website, $keywordArray){
+        $googleArr = [];
+        foreach ($keywordArray as $keyword){
+            $google = Keyword::where('slug',Str::slug($keyword))->first();
+            array_push($googleArr,$google);
+        }
+        return $googleArr;
+
         $country = "en";
         $domain = "stackoverflow.com";
         $keywords = "php google keyword rank checker";
@@ -84,7 +98,7 @@ class KeywordController extends Controller
             $html = file_get_contents($baseurl);
 
             $doc = phpQuery::newDocument($html);
-
+            dd($doc);
             foreach($doc['#ires cite'] as $node){
                 $rank++;
                 $url = $node->nodeValue;
@@ -94,6 +108,7 @@ class KeywordController extends Controller
                 }
             }
         }
+          dd($urls);
         return urls;
     }
 

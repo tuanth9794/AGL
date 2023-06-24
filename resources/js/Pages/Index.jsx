@@ -1,6 +1,7 @@
-import React, {useEffect, useState } from 'react';
-import { Button, Form, Input, Table, Divider, Tag} from 'antd';
+import React, {useRef,useEffect, useState } from 'react';
+import { Button, Form, Input, Table, Divider, Tag,  Breadcrumb, Layout, Menu, theme} from 'antd';
 
+const { Header, Content, Footer } = Layout;
 const columns = [
     {
         title: 'name',
@@ -34,63 +35,60 @@ const columns = [
 
 const Index = () => {
 
-    const [data, setData] = useState([])
-    const fetchData = () => {
-        fetch("http://localhost/AGL/public/api/keyword")
-            .then(response => {
-                return response.json()
-                console.log(response.json())
-            })
-            .then(data => {
-                setData(data)
-            })
-    }
-    useEffect(() => {
-        fetchData()
-    }, [])
 
-    const onSubmit = (e) => {
+    const [data, setData] = useState([]);
+    const ref = useRef(null);
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        if (!query) return;
+        const website = document.getElementById('website').value.toLowerCase();
+        const keyword = document.getElementById('keyword').value.toLowerCase();
 
         async function fetchData() {
             const response = await fetch(
-                'http://localhost/AGL/public/api/keyword',{method: "POST",}
+                `http://localhost/AGL/public/api/keyword?keyword=${keyword}&website=${website}&token=__lkajsdfaiufekfjb`
             );
+
             const data = await response.json();
-            const results = data.Search;
-            setData(results);
+            setData(data);
         }
         fetchData();
     };
+
+    console.log(data);
     return (
-        <>
-            <Form
-                onSubmit={onSubmit}
-                name="wrap"
-                labelCol={{ flex: '110px' }}
-                labelAlign="left"
-                labelWrap
-                wrapperCol={{ flex: 1 }}
-                colon={false}
-                style={{ maxWidth: 600 }}
-            >
-                <Form.Item label="URL" name="website" rules={[{ required: true }]}>
-                    <Input />
-                </Form.Item>
+        <Layout className="layout">
+            <Header style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="demo-logo" />
+                <Menu
+                    theme="dark"
+                    mode="horizontal"
+                    defaultSelectedKeys={['2']}
+                    items={new Array(1).fill(null).map((_, index) => {
+                        const key = index + 1;
+                        return {
+                            key,
+                            label: `Project Check Rank SEO Google & Yahoo`,
+                        };
+                    })}
+                />
+            </Header>
+            <Content style={{ padding: '0 50px' }}>
+                <form onSubmit={handleSubmit}>
+                    <Form.Item label="URL" name="website" rules={[{ required: true }]}>
+                        <Input id={'website'}/>
+                    </Form.Item>
 
-                <Form.Item label="Keywords" name="keyword" rules={[{ required: true }]}>
-                    <Input.TextArea/>
-                </Form.Item>
+                    <Form.Item label="Keywords" name="keyword" rules={[{ required: true }]}>
+                        <Input.TextArea id={'keyword'}/>
+                    </Form.Item>
 
-                <Form.Item label=" ">
-                    <Button type="primary" htmlType="submit">
-                        Search
-                    </Button>
-                </Form.Item>
-            </Form>
-            <Table columns={columns} dataSource={data} scroll={{x: 768}} />
-        </>
+                    <button type="submit">Submit</button>
+                </form>
+                <Table columns={columns} dataSource={data} scroll={{x: 768}} />
+            </Content>
+            <Footer style={{ textAlign: 'center' }}>Copyright © 2023 <a href={`https://creand.net`}></a>Creand</Footer>
+        </Layout>
     )
 }
 
