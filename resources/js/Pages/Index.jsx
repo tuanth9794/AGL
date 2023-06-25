@@ -90,12 +90,12 @@ const Index = () => {
                    }}
                    onFinish={onFinish}
                >
-                   <Form.Item label="URL" name="website" rules={[{ required: true }]}>
-                       <Input id={'website'} required/>
+                   <Form.Item label="URL" name="website" rules={[{ required: true, message: 'Link  website không thể để trống' }]}>
+                       <Input id={'website'}/>
                    </Form.Item>
 
-                   <Form.Item label="Keywords" name="keyword" rules={[{ required: true }]}>
-                       <Input.TextArea id={'keyword'} rows={5} required/>
+                   <Form.Item label="Keywords" name="keyword" rules={[{ required: true, message: 'Thêm ít nhất 1 từ khóa. Nhấn enter xuống dòng để thêm nhiều từ khóa ' }]}>
+                       <Input.TextArea id={'keyword'} rows={5}/>
                    </Form.Item>
                    <Button type="primary" htmlType="submit"
                    style={{dispaly: 'flex',marginLeft: 'auto',marginRight:'auto'}}

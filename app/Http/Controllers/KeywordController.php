@@ -46,9 +46,10 @@ class KeywordController extends Controller
                 $yahoo = $this->checkYahooRank($requestArr,$keyword);
                 $google = $this->checkGoogleRank($yahoo,$keyword);
                 $keyword = $this->keyword->show($google);
+                $keyword['google_searches'] = number_format($keyword['google_searches'],0);
+                $keyword['yahoo_searches'] = number_format($keyword['yahoo_searches'],0);
                 array_push($keywords,$keyword);
             }
-
 
             return response()->json($keywords);
 
@@ -93,8 +94,8 @@ class KeywordController extends Controller
     public function checkGoogleRank($request,$keyword)
     {
 
-        $GOOGLE_API_KEY = 'AIzaSyBwedZmPPaQHWP66x_tKSRcWsjps3pOG04';
-        $GOOGLE_CSE_CX = '331c45039872c435b';
+        $GOOGLE_API_KEY = 'AIzaSyC7Tglv5oz212Sf7R4hjtwVQpSXHoECATg';
+        $GOOGLE_CSE_CX = 'f0a7f9cae2dc444ce';
         $query = urlencode($keyword);
         $domain = $request['website'];
         $pages = 5;
