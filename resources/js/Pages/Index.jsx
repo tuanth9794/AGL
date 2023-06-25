@@ -1,5 +1,5 @@
 import React, {useRef,useEffect, useState } from 'react';
-import { Button, Form, Input, Table, Divider, Tag,  Breadcrumb, Layout, Menu, theme} from 'antd';
+import { Button, Form, Input, Table, Divider, Tag,  Breadcrumb, Layout, Menu, theme, Select } from 'antd';
 
 const { Header, Content, Footer } = Layout;
 const columns = [
@@ -32,18 +32,19 @@ const columns = [
 
 ];
 
-
 const Index = () => {
 
 
     const [data, setData] = useState([]);
     const ref = useRef(null);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+
+
+    const onFinish = (e) => {
+        // e.preventDefault();
         const website = document.getElementById('website').value.toLowerCase();
-        const keyword = document.getElementById('keyword').value.toLowerCase();
-        // console.log(keyword);
+        const keyword =  document.getElementById('keyword').value.toLowerCase().split('\n').join();;
+
 
         async function fetchData() {
             const response = await fetch(
@@ -57,7 +58,7 @@ const Index = () => {
     };
 
     return (
-        <Layout className="layout">
+        <Layout className="layout" style={{height: '100vh'}}>
             <Header style={{ display: 'flex', alignItems: 'center' }}>
                 <div className="demo-logo" />
                 <Menu
@@ -68,23 +69,41 @@ const Index = () => {
                         const key = index + 1;
                         return {
                             key,
-                            label: `Project Check Rank SEO Google & Yahoo`,
+                            label: `Project Check Rank SEO Google & Yahoo `,
                         };
                     })}
                 />
             </Header>
-            <Content style={{ padding: '0 50px' }}>
-                <form onSubmit={handleSubmit}>
-                    <Form.Item label="URL" name="website" rules={[{ required: true }]}>
-                        <Input id={'website'}/>
-                    </Form.Item>
+            <Content style={{ padding: '0 50px',display: 'flex',flexDirection: 'column', justifyContent:'center',
+            alignItems:'center'}}>
 
-                    <Form.Item label="Keywords" name="keyword" rules={[{ required: true }]}>
-                        <Input.TextArea id={'keyword'}/>
-                    </Form.Item>
+               <Form
+                   name="wrap"
+                   labelCol={{ flex: '110px' }}
+                   labelAlign="left"
+                   labelWrap
+                   wrapperCol={{ flex: 1 }}
+                   colon={false}
+                   style={{ maxWidth: '80%', width: '80%', marginBottom:'30px' }}
+                   initialValues={{
+                       remember: true
+                   }}
+                   onFinish={onFinish}
+               >
+                   <Form.Item label="URL" name="website" rules={[{ required: true }]}>
+                       <Input id={'website'} required/>
+                   </Form.Item>
 
-                    <button type="submit">Submit</button>
-                </form>
+                   <Form.Item label="Keywords" name="keyword" rules={[{ required: true }]}>
+                       <Input.TextArea id={'keyword'} rows={5} required/>
+                   </Form.Item>
+                   <Button type="primary" htmlType="submit"
+                   style={{dispaly: 'flex',marginLeft: 'auto',marginRight:'auto'}}
+                   >
+                       Submit
+                   </Button>
+               </Form>
+
                 <Table columns={columns} dataSource={data} scroll={{x: 768}} />
             </Content>
             <Footer style={{ textAlign: 'center' }}>Copyright © 2023 <a href={`https://creand.net`}></a>Creand</Footer>

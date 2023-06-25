@@ -24,10 +24,11 @@ class KeywordRepository implements KeywordRepositoryInterface
         $website = $this->website->where('url', $request['website'])->first();
         $keywords = [];
         foreach ($request['keyword'] as $keyword) {
-            $obj = $this->keyword->where('slug', Str::slug($keyword))->where('website_id', $website->id)->first();
+            $obj = $this->keyword->where('name', $keyword)->where('website_id', $website->id)->first();
             if (!isset($obj)) {
                 $obj = $this->store($request, $keyword, $website);
             } else {
+
                 $obj = $this->update($request, $obj, $website);
             }
 

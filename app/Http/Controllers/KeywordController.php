@@ -31,9 +31,10 @@ class KeywordController extends Controller
     public function show(Request $request)
     {
         try {
+
             $requestArr = [];
             $requestArr['website'] = htmlspecialchars($_GET["website"]);
-            $requestArr['keyword'] = array($_GET["keyword"]);
+            $requestArr['keyword'] = explode(',',$_GET["keyword"]);
 
             $requestArr = $this->requestValidate($requestArr);
             $this->website->isset($requestArr);
@@ -51,19 +52,29 @@ class KeywordController extends Controller
 
     public function requestValidate($requestArr)
     {
-        if ($requestArr['website'] == null && count($requestArr['keyword']) < 1 && count($requestArr['keyword']) >= 5) {
-            dd('Không đủ điều kiện');
+
+        if ($requestArr['website'] == null || $requestArr['keyword'] == null) {
+            dd('Dữ liệu thiếu hoặc không chính xác');
         }
+
         if (strpos($requestArr['website'], 'http://') !== true || strpos($requestArr['website'], 'https://') !== true
             || strpos($requestArr['website'], 'https://www.') !== true || strpos($requestArr['website'], 'http://www.') !== true ||
             strpos($requestArr['website'], 'www.') !== true) {
             $requestArr['website'] = 'https://' . $requestArr['website'];
         }
         if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $requestArr['website'])) {
-            return redirect()->back();
-        } elseif (count($requestArr['keyword']) == 0 || count($requestArr['keyword']) >= 5) {
-            return redirect()->back();
+            dd('Địa chỉ website không hợp lệ');
+        } elseif (count($requestArr['keyword']) == 0 || count($requestArr['keyword']) > 5) {
+            dd('số lượng từ khóa tìm kiếm tối đa là 5');
         }
+        $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/';
+        foreach($requestArr['keyword'] as $keyword){
+            if ((preg_match($pattern, $keyword))){
+                dd('Từ khóa không đúng định dạng');
+            }
+            $keyword = Str::lower($keyword);
+        }
+
         return $requestArr;
     }
 
