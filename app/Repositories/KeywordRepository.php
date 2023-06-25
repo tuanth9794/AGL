@@ -22,19 +22,14 @@ class KeywordRepository implements KeywordRepositoryInterface
     public function show($request)
     {
         $website = $this->website->where('url', $request['website'])->first();
-        $keywords = [];
-        foreach ($request['keyword'] as $keyword) {
-            $obj = $this->keyword->where('name', $keyword)->where('website_id', $website->id)->first();
+            $obj = $this->keyword->where('name', $request['keyword'])->where('website_id', $website->id)->first();
             if (!isset($obj)) {
-                $obj = $this->store($request, $keyword, $website);
+                $obj = $this->store($request, $request['keyword'], $website);
             } else {
-
                 $obj = $this->update($request, $obj, $website);
             }
 
-            array_push($keywords, $obj);
-        }
-        return $keywords;
+        return $obj;
     }
 
     public function store($request, $keyword, $website)

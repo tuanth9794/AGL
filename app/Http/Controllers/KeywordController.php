@@ -14,6 +14,7 @@ use App\Http\Requests\UpdateKeywordRequest;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\LaravelPhpQuery\phpQuery;
+use function Monolog\toArray;
 
 class KeywordController extends Controller
 {
@@ -33,16 +34,22 @@ class KeywordController extends Controller
         try {
 
             $requestArr = [];
+            $keywords = [];
             $requestArr['website'] = htmlspecialchars($_GET["website"]);
-            $requestArr['keyword'] = explode(',',$_GET["keyword"]);
+            $requestArr['keyword'] = explode(',', $_GET["keyword"]);
 
             $requestArr = $this->requestValidate($requestArr);
             $this->website->isset($requestArr);
 
-            $yahoo = $this->checkYahooRank($requestArr);
-            $google = $this->checkGoogleRank($yahoo);
+            foreach ($requestArr['keyword'] as $keyword){
+                $requestArr['keyword'] = $keyword;
+                $yahoo = $this->checkYahooRank($requestArr,$keyword);
+                $google = $this->checkGoogleRank($yahoo,$keyword);
+                $keyword = $this->keyword->show($google);
+                array_push($keywords,$keyword);
+            }
 
-            $keywords = $this->keyword->show($google);
+
             return response()->json($keywords);
 
         } catch (QueryException $e) {
@@ -56,20 +63,25 @@ class KeywordController extends Controller
         if ($requestArr['website'] == null || $requestArr['keyword'] == null) {
             dd('Dữ liệu thiếu hoặc không chính xác');
         }
-
+        foreach (['http://','https://','www.','http://www.','https://www.'] as $http){
+            if(strpos($requestArr['website'],$http) !== false){
+                $exp = explode($http,$requestArr['website']);
+                $requestArr['website'] = $exp[1];
+            }
+        }
         if (strpos($requestArr['website'], 'http://') !== true || strpos($requestArr['website'], 'https://') !== true
             || strpos($requestArr['website'], 'https://www.') !== true || strpos($requestArr['website'], 'http://www.') !== true ||
             strpos($requestArr['website'], 'www.') !== true) {
-            $requestArr['website'] = 'https://' . $requestArr['website'];
+            $requestArr['website'] = $requestArr['website'];
         }
-        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $requestArr['website'])) {
+        if (!preg_match("/\b[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $requestArr['website'])) {
             dd('Địa chỉ website không hợp lệ');
         } elseif (count($requestArr['keyword']) == 0 || count($requestArr['keyword']) > 5) {
             dd('số lượng từ khóa tìm kiếm tối đa là 5');
         }
         $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/';
-        foreach($requestArr['keyword'] as $keyword){
-            if ((preg_match($pattern, $keyword))){
+        foreach ($requestArr['keyword'] as $keyword) {
+            if ((preg_match($pattern, $keyword))) {
                 dd('Từ khóa không đúng định dạng');
             }
             $keyword = Str::lower($keyword);
@@ -78,43 +90,45 @@ class KeywordController extends Controller
         return $requestArr;
     }
 
-    public function checkGoogleRank($googleArr)
+    public function checkGoogleRank($request,$keyword)
     {
-        $googleArr['google_rank']=rand(1,50);
-        $googleArr['google_searches']=rand(1000,100000);
-        return $googleArr;
 
-        $country = "en";
-        $domain = "stackoverflow.com";
-        $keywords = "php google keyword rank checker";
-        $firstnresults = 50;
+        $GOOGLE_API_KEY = 'AIzaSyBwedZmPPaQHWP66x_tKSRcWsjps3pOG04';
+        $GOOGLE_CSE_CX = '331c45039872c435b';
+        $query = urlencode($keyword);
+        $domain = $request['website'];
+        $pages = 5;
+        $gl = "vi";
+        $hl = "vi";
 
-        $rank = 0;
-        $urls = array();
-        $pages = ceil($firstnresults / 10);
-        for ($p = 0; $p < $pages; $p++) {
-            $start = $p * 10;
-            $baseurl = "https://www.google.com/search?hl=" . $country . "&output=search&start=" . $start . "&q=" . urlencode($keywords);
-            $html = file_get_contents($baseurl);
+        $found = false;
+        for ($page = 1; $page <= $pages && $found == false; $page++) {
+            $apiurl = sprintf('https://www.googleapis.com/customsearch/v1?q=%s&cx=%s&key=%s&hl=%s&gl=%s&start=%d', $query, $GOOGLE_CSE_CX, $GOOGLE_API_KEY, $hl, $gl, ($page - 1) * 10 + 1);
+            $json = file_get_contents($apiurl);
+            $obj = json_decode($json);
 
-            $doc = phpQuery::newDocument($html);
-            dd($doc);
-            foreach ($doc['#ires cite'] as $node) {
-                $rank++;
-                $url = $node->nodeValue;
-                $urls[] = "[" . $rank . "] => " . $url;
-                if (stripos($url, $domain) !== false) {
-                    break(2);
+            $i = 0;
+            foreach ($obj->items as $idx => $item) {
+                $i+= 1;
+                if (strpos($item->link, $domain)!== false) {
+                    $found = true;
+                    $request['google_rank'] = $i;
+                    $request['google_searches'] = $obj->queries->request[0]->totalResults;
+                    return $request;
                 }
             }
         }
-        dd($urls);
-        return urls;
+        if ($found !== true) {
+            $request['google_rank'] = 0;
+            $request['google_searches'] = '0';
+            return $request;
+        }
     }
 
-    public function checkYahooRank($request){
-        $request['yahoo_rank']=rand(1,50);
-        $request['yahoo_searches']=rand(1000,100000);
+    public function checkYahooRank($request,$keyword)
+    {
+        $request['yahoo_rank'] = rand(1, 50);
+        $request['yahoo_searches'] = rand(1000, 100000);
 
         return $request;
     }
