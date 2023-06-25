@@ -15,6 +15,6 @@ class Website extends Model
 
         public function keyword()
             {
-               return $this->hasMany('App\Entities\Keyword','website_id');
+               return $this->hasMany('App\Models\Keyword','website_id');
             }
 }

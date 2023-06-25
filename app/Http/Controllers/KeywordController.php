@@ -6,6 +6,7 @@ use App\Interfaces\KeywordRepositoryInterface;
 use App\Interfaces\WebsiteRepositoryInterface;
 use App\Models\Keyword;
 use App\Models\Website;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreKeywordRequest;
@@ -13,6 +14,7 @@ use App\Http\Requests\UpdateKeywordRequest;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\LaravelPhpQuery\phpQuery;
+
 class KeywordController extends Controller
 {
     public function __construct(KeywordRepositoryInterface $keyword, WebsiteRepositoryInterface $website)
@@ -26,62 +28,49 @@ class KeywordController extends Controller
         return Inertia::render('Index');
     }
 
-    public function show()
+    public function show(Request $request)
     {
-        $website = htmlspecialchars($_GET["website"]);
-        $keywordArray[] = $_GET["keyword"];
-        $google = $this->checkGoogleRank($website,$keywordArray);
-        return response()->json($google);
+        try {
+            $requestArr = [];
+            $requestArr['website'] = htmlspecialchars($_GET["website"]);
+            $requestArr['keyword'] = array($_GET["keyword"]);
 
-        $request->validate([
-            'keyword' => 'required',
-            'website' => 'required'
-        ]);
+            $requestArr = $this->requestValidate($requestArr);
+            $this->website->isset($requestArr);
 
+            $yahoo = $this->checkYahooRank($requestArr);
+            $google = $this->checkGoogleRank($yahoo);
 
-        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$request->website)) {
-            return redirect()->back();
-        }elseif (count($request->keyword)==0){
-            return redirect()->back();
+            $keywords = $this->keyword->show($google);
+            return response()->json($keywords);
+
+        } catch (QueryException $e) {
+            return $e;
         }
-        $responses = $this->keyword->show($request);
-        foreach ($responses as $response) {
-            if ($response->searches == 1) {
-                $response['googleRank'] = $response->rank;
-                $response['googleSearch'] = $response->searches;
-            } else {
-                $response['yahooRank'] = $response->rank;
-                $response['yahooSearch'] = $response->searches;
-            }
-        }
-        return response()->json($google);
-        return response()->json($responses);
     }
 
-    public function store(Request $request)
+    public function requestValidate($requestArr)
     {
-        $websiteSlug = $request->website;
-        $keywordSlug = $request->keyword;
-
-        $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/';
-        if ($websiteSlug == null || $keywordSlug == null) {
-            return redirect()->back();
-        } elseif (preg_match($pattern, $keywordSlug) || preg_match($pattern, $websiteSlug)) {
-            return view('errors.404');
+        if ($requestArr['website'] == null && count($requestArr['keyword']) < 1 && count($requestArr['keyword']) >= 5) {
+            dd('Không đủ điều kiện');
         }
-
-        $website = $this->website->findByField('slug', '$websiteSlug')->first();
-        $lists = $website->keyword->where('slug', '$keywordSlug');
-        dd($lists);
-        return response()->json($lists, 200);
+        if (strpos($requestArr['website'], 'http://') !== true || strpos($requestArr['website'], 'https://') !== true
+            || strpos($requestArr['website'], 'https://www.') !== true || strpos($requestArr['website'], 'http://www.') !== true ||
+            strpos($requestArr['website'], 'www.') !== true) {
+            $requestArr['website'] = 'https://' . $requestArr['website'];
+        }
+        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $requestArr['website'])) {
+            return redirect()->back();
+        } elseif (count($requestArr['keyword']) == 0 || count($requestArr['keyword']) >= 5) {
+            return redirect()->back();
+        }
+        return $requestArr;
     }
 
-    public function checkGoogleRank($website, $keywordArray){
-        $googleArr = [];
-        foreach ($keywordArray as $keyword){
-            $google = Keyword::where('slug',Str::slug($keyword))->first();
-            array_push($googleArr,$google);
-        }
+    public function checkGoogleRank($googleArr)
+    {
+        $googleArr['google_rank']=rand(1,50);
+        $googleArr['google_searches']=rand(1000,100000);
         return $googleArr;
 
         $country = "en";
@@ -90,26 +79,33 @@ class KeywordController extends Controller
         $firstnresults = 50;
 
         $rank = 0;
-        $urls = Array();
+        $urls = array();
         $pages = ceil($firstnresults / 10);
-        for($p = 0; $p < $pages; $p++){
+        for ($p = 0; $p < $pages; $p++) {
             $start = $p * 10;
-            $baseurl = "https://www.google.com/search?hl=".$country."&output=search&start=".$start."&q=".urlencode($keywords);
+            $baseurl = "https://www.google.com/search?hl=" . $country . "&output=search&start=" . $start . "&q=" . urlencode($keywords);
             $html = file_get_contents($baseurl);
 
             $doc = phpQuery::newDocument($html);
             dd($doc);
-            foreach($doc['#ires cite'] as $node){
+            foreach ($doc['#ires cite'] as $node) {
                 $rank++;
                 $url = $node->nodeValue;
-                $urls[] = "[".$rank."] => ".$url;
-                if(stripos($url, $domain) !== false){
+                $urls[] = "[" . $rank . "] => " . $url;
+                if (stripos($url, $domain) !== false) {
                     break(2);
                 }
             }
         }
-          dd($urls);
+        dd($urls);
         return urls;
+    }
+
+    public function checkYahooRank($request){
+        $request['yahoo_rank']=rand(1,50);
+        $request['yahoo_searches']=rand(1000,100000);
+
+        return $request;
     }
 
 }

@@ -3,12 +3,16 @@
 namespace App\Repositories;
 
 use App\Interfaces\KeywordRepositoryInterface;
+
 use App\Models\Keyword;
 use App\Models\Website;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class KeywordRepository implements KeywordRepositoryInterface
 {
-private $keyword;
+    private $keyword;
+
     public function __construct(Keyword $keyword, Website $website)
     {
         $this->keyword = $keyword;
@@ -17,21 +21,38 @@ private $keyword;
 
     public function show($request)
     {
-        $website = $this->website->findByField('url',$request->website)->first();
-        if(!isset($website)){
-            $this->website->create();
-        }
+        $website = $this->website->where('url', $request['website'])->first();
         $keywords = [];
-        foreach ($request->keyword as $key){
-            $keyword = $website->keyword->where('name',$keyword)->sortBy('rank');
+        foreach ($request['keyword'] as $keyword) {
+            $obj = $this->keyword->where('slug', Str::slug($keyword))->where('website_id', $website->id)->first();
+            if (!isset($obj)) {
+                $obj = $this->store($request, $keyword, $website);
+            } else {
+                $obj = $this->update($request, $obj, $website);
+            }
 
+            array_push($keywords, $obj);
         }
         return $keywords;
     }
 
-    public function store($request)
+    public function store($request, $keyword, $website)
     {
-        return $this->keyword->create($request->all());
+        return $website->keyword()->create(['name' => $keyword, 'slug' => Str::slug($keyword . '-' . time()),
+            'is_active' => 1, 'is_publish' => 1, 'google_rank' => $request['google_rank'], 'google_searches' => $request['google_searches'],
+            'yahoo_rank' => $request['yahoo_rank'], 'yahoo_searches' => $request['yahoo_searches']]);
+    }
+
+    public function update($request, $obj, $website)
+    {
+        $request['name'] = $obj->name;
+        $request['slug'] = Str::slug($obj->name);
+        $requestKeyword = new Keyword($request);
+        DB::table('keywords')
+            ->where('id', $obj->id)
+            ->update($requestKeyword->attributesToArray());
+        return $this->keyword->find($obj->id);
+
     }
 
 }

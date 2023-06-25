@@ -9,16 +9,13 @@ class Keyword extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id','name', 'slug', 'rank','searches','website_id',
+    protected $fillable = ['id','name', 'slug',
+        'google_rank','google_searches','yahoo_rank','yahoo_searches','website_id',
                 'is_active','is_publish',
                 'create_by', 'update_by'];
 
     public function website()
             {
-                return $this->belongsTo('App\Entities\Website', 'website_id');
-            }
-    public function search_tool()
-            {
-                return $this->belongsTo('App\Entities\SearchTool', 'search_tool_id');
+                return $this->belongsTo('App\Models\Website', 'website_id');
             }
 }

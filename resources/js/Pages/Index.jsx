@@ -11,23 +11,23 @@ const columns = [
     },
     {
         title: 'Google rank',
-        dataIndex: 'googleRank',
-        key: 'googleRank',
+        dataIndex: 'google_rank',
+        key: 'google_rank',
     },
     {
         title: 'Google search',
-        dataIndex: 'googleSearch',
-        key: 'googleSearch',
+        dataIndex: 'google_searches',
+        key: 'google_searches',
     },
     {
         title: 'Yahoo rank',
-        dataIndex: 'yahooRank',
-        key: 'yahooRank',
+        dataIndex: 'yahoo_rank',
+        key: 'yahoo_rank',
     },
     {
         title: 'Yahoo search',
-        dataIndex: 'yahooSearch',
-        key: 'yahooSearch',
+        dataIndex: 'yahoo_searches',
+        key: 'yahoo_searches',
     },
 
 ];
@@ -43,10 +43,11 @@ const Index = () => {
         e.preventDefault();
         const website = document.getElementById('website').value.toLowerCase();
         const keyword = document.getElementById('keyword').value.toLowerCase();
+        // console.log(keyword);
 
         async function fetchData() {
             const response = await fetch(
-                `http://localhost/AGL/public/api/keyword?keyword=${keyword}&website=${website}&token=__lkajsdfaiufekfjb`
+                `http://127.0.0.1:8000/api/keyword?keyword=${keyword}&website=${website}&token=__lkajsdfaiufekfjb`
             );
 
             const data = await response.json();
@@ -55,7 +56,6 @@ const Index = () => {
         fetchData();
     };
 
-    console.log(data);
     return (
         <Layout className="layout">
             <Header style={{ display: 'flex', alignItems: 'center' }}>
