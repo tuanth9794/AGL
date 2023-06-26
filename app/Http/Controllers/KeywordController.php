@@ -54,7 +54,7 @@ class KeywordController extends Controller
             return response()->json($keywords);
 
         } catch (QueryException $e) {
-            return $e;
+            return response()->json(['error'=>'Dữ liệu sai vui lòng thử lại']);
         }
     }
 
@@ -78,6 +78,7 @@ class KeywordController extends Controller
         if (!preg_match("/\b[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $requestArr['website'])) {
             dd('Địa chỉ website không hợp lệ');
         } elseif (count($requestArr['keyword']) == 0 || count($requestArr['keyword']) > 5) {
+
             dd('số lượng từ khóa tìm kiếm tối đa là 5');
         }
         $pattern = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/';

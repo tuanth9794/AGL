@@ -50,10 +50,15 @@ const Index = () => {
             const response = await fetch(
                 `http://127.0.0.1:8000/api/keyword?keyword=${keyword}&website=${website}&token=__lkajsdfaiufekfjb`
             );
-
+            if (!response.ok) {
+                const error = `Vui lòng nhập chính xác dữ liệu: ${response.status}`;
+                document.getElementById('error').innerHTML = error;
+                document.getElementsByTagName('button')[0].removeAttribute("disabled");
+            }
             const data = await response.json();
             setData(data);
             document.getElementsByTagName('button')[0].removeAttribute("disabled");
+
         }
         fetchData();
 
@@ -78,7 +83,7 @@ const Index = () => {
             </Header>
             <Content style={{ padding: '0 50px',display: 'flex',flexDirection: 'column', justifyContent:'center',
             alignItems:'center'}}>
-
+                <p id='error'></p>
                <Form
                    name="wrap"
                    labelCol={{ flex: '110px' }}
