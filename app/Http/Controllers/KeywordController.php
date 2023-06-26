@@ -94,8 +94,8 @@ class KeywordController extends Controller
     public function checkGoogleRank($request,$keyword)
     {
 
-        $GOOGLE_API_KEY = 'AIzaSyC7Tglv5oz212Sf7R4hjtwVQpSXHoECATg';
-        $GOOGLE_CSE_CX = 'f0a7f9cae2dc444ce';
+        $GOOGLE_API_KEY = 'AIzaSyAs-QohEtDl-dlbX6dyB-CUd5gfFFQViJ0';
+        $GOOGLE_CSE_CX = '90a7f885c6c6247f2';
         $query = urlencode($keyword);
         $domain = $request['website'];
         $pages = 5;

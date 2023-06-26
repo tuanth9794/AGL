@@ -44,7 +44,7 @@ const Index = () => {
         // e.preventDefault();
         const website = document.getElementById('website').value.toLowerCase();
         const keyword =  document.getElementById('keyword').value.toLowerCase().split('\n').join();;
-
+        document.getElementsByTagName('button')[0].setAttribute("disabled", "disabled");
 
         async function fetchData() {
             const response = await fetch(
@@ -53,8 +53,10 @@ const Index = () => {
 
             const data = await response.json();
             setData(data);
+            document.getElementsByTagName('button')[0].removeAttribute("disabled");
         }
         fetchData();
+
     };
 
     return (
